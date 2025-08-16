@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { createClient } from "@/lib/supabase/client";
-import { Plus, Trash2 } from "lucide-react";
-import { toast, Toaster } from "sonner";
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import { Toaster, toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 
 interface Note {
   id: string;
@@ -21,20 +21,22 @@ export default function Home() {
 
   const fetchNotes = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data, error } = await supabase
-        .from("notes")
-        .select("id, title, content, updated_at")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false });
+        .from('notes')
+        .select('id, title, content, updated_at')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
       setNotes(data || []);
     } catch (error) {
-      console.error("Error fetching notes:", error);
-      toast.error("Failed to load notes");
+      console.error('Error fetching notes:', error);
+      toast.error('Failed to load notes');
     } finally {
       setLoading(false);
     }
@@ -45,24 +47,29 @@ export default function Home() {
   }, [fetchNotes]);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   const handleDeleteNote = async (noteId: string) => {
-    if (!confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to delete this note? This action cannot be undone.'
+      )
+    ) {
       return;
     }
 
     setDeletingId(noteId);
     try {
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', noteId);
+      const { error } = await supabase.from('notes').delete().eq('id', noteId);
 
       if (error) throw error;
 
-      setNotes(notes.filter(note => note.id !== noteId));
+      setNotes(notes.filter((note) => note.id !== noteId));
       toast.success('Note deleted successfully');
     } catch (error) {
       console.error('Error deleting note:', error);
@@ -75,36 +82,38 @@ export default function Home() {
   return (
     <>
       <Toaster position="top-center" />
-      <div className="container mx-auto p-4 max-w-4xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">My Notes</h1>
+      <div className="container mx-auto max-w-4xl p-4">
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="font-bold text-2xl">My Notes</h1>
           <Link
-            href="/new"
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
             aria-label="Create new note"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
+            href="/new"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
             New Note
           </Link>
         </div>
 
         {notes.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">No notes yet. Create your first note by clicking the button above.</p>
+          <div className="py-16 text-center">
+            <p className="text-muted-foreground">
+              No notes yet. Create your first note by clicking the button above.
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
             {notes.map((note) => (
               <div
+                className="group relative flex items-center justify-between rounded-lg p-4 transition-colors hover:bg-accent/50"
                 key={note.id}
-                className="group relative flex items-center justify-between p-4 rounded-lg hover:bg-accent/50 transition-colors"
               >
-                <Link href={`/${note.id}`} className="flex-1 min-w-0">
+                <Link className="min-w-0 flex-1" href={`/${note.id}`}>
                   <div className="flex flex-col">
-                    <h3 className="font-medium truncate pr-8">
-                      {note.title || "Untitled Note"}
+                    <h3 className="truncate pr-8 font-medium">
+                      {note.title || 'Untitled Note'}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {new Date(note.updated_at).toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'short',
@@ -114,19 +123,19 @@ export default function Home() {
                   </div>
                 </Link>
                 <button
+                  aria-label="Delete note"
+                  className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+                  disabled={deletingId === note.id}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     handleDeleteNote(note.id);
                   }}
-                  disabled={deletingId === note.id}
-                  className="p-2 text-muted-foreground hover:text-destructive rounded-full hover:bg-accent transition-colors"
-                  aria-label="Delete note"
                 >
                   {deletingId === note.id ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
+                    <div className="h-4 w-4 animate-spin rounded-full border-current border-t-2 border-b-2" />
                   ) : (
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   )}
                 </button>
               </div>

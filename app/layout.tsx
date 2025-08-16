@@ -1,34 +1,36 @@
-import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"
+import type { Metadata, Viewport } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Personal Notes",
-    template: "%s | Personal Notes",
+    default: 'Personal Notes',
+    template: '%s | Personal Notes',
   },
-  description: "A simple note-taking application",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  description: 'A simple note-taking application',
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  ),
   openGraph: {
-    title: "Personal Notes",
-    description: "A simple note-taking application",
-    url: "/",
-    siteName: "Personal Notes",
-    locale: "en_US",
-    type: "website",
+    title: 'Personal Notes',
+    description: 'A simple note-taking application',
+    url: '/',
+    siteName: 'Personal Notes',
+    locale: 'en_US',
+    type: 'website',
   },
   robots: {
     index: true,
@@ -60,13 +62,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      lang="en"
+      suppressHydrationWarning
+    >
       <body className="min-h-screen antialiased">
-        <ThemeProvider attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
->
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          disableTransitionOnChange
+          enableSystem
+        >
           {children}
         </ThemeProvider>
       </body>

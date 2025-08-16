@@ -1,32 +1,28 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { use } from 'react';
 
-// Dynamically import the Editor component with SSR disabled
 const Editor = dynamic(
   () => import('@/components/editor').then((mod) => mod.default),
   {
     ssr: false,
     loading: () => (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-blue-500 border-t-2 border-b-2" />
       </div>
-    )
+    ),
   }
 );
 
 interface NotePageProps {
   params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default function NotePage({ params }: NotePageProps) {
-  const { id } = use(params);
-  // rest of your component remains the same
+  const { id } = params;
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const router = useRouter();
@@ -36,7 +32,9 @@ export default function NotePage({ params }: NotePageProps) {
     const checkNoteExists = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
         if (!user) {
           router.push('/login');
@@ -69,11 +67,9 @@ export default function NotePage({ params }: NotePageProps) {
     checkNoteExists();
   }, [id, router]);
 
-
-
-  if (!isAuthorized || !note) {
+  if (!(isAuthorized && note)) {
     return null;
   }
 
-  return <Editor noteId={id} initialNote={note} />;
+  return <Editor initialNote={note} noteId={id} />;
 }
