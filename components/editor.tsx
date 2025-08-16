@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import Placeholder from '@tiptap/extension-placeholder';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { ArrowLeft, Check, ChevronsUpDown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import Placeholder from "@tiptap/extension-placeholder";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { ArrowLeft, Check, ChevronsUpDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -14,20 +14,20 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { createClient } from '@/lib/supabase/client';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/popover";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 const FONT_OPTIONS = [
-  { id: 'sans', name: 'Sans', className: 'font-sans' },
-  { id: 'serif', name: 'Serif', className: 'font-serif' },
-  { id: 'mono', name: 'Mono', className: 'font-mono' },
+  { id: "sans", name: "Sans", className: "font-sans" },
+  { id: "serif", name: "Serif", className: "font-serif" },
+  { id: "mono", name: "Mono", className: "font-mono" },
 ];
 
 interface NoteData {
@@ -44,30 +44,33 @@ interface EditorProps {
 }
 
 export default function Editor({ noteId, initialNote }: EditorProps) {
-  const [status, setStatus] = useState<'saved' | 'saving'>('saved');
+  const [status, setStatus] = useState<"saved" | "saving">("saved");
   const [isLoading, setIsLoading] = useState(!initialNote);
-  const [title, setTitle] = useState(initialNote?.title || '');
+  const [title, setTitle] = useState(initialNote?.title || "");
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
   const [open, setOpen] = useState(false);
   const router = useRouter();
+
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const titleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const saveNote = useCallback(
     async (content: string, customTitle?: string) => {
       try {
         const supabase = createClient();
         const { error } = await supabase
-          .from('notes')
+          .from("notes")
           .update({
             content,
-            title: (customTitle ?? title).trim() || 'Untitled Note',
+            title: (customTitle ?? title).trim() || "Untitled Note",
             updated_at: new Date().toISOString(),
           })
-          .eq('id', noteId);
+          .eq("id", noteId);
 
         if (error) throw error;
-        setStatus('saved');
+        setStatus("saved");
       } catch (error) {
-        console.error('Error saving note:', error);
+        //console.error("Error saving note:", error);
       }
     },
     [noteId, title]
@@ -77,22 +80,22 @@ export default function Editor({ noteId, initialNote }: EditorProps) {
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Start typing... **bold** *italic* # heading',
+        placeholder: "Start typing... **bold** *italic* # heading",
       }),
     ],
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none p-6 min-h-[800px]',
+        class: "prose prose-lg max-w-none focus:outline-none p-6 min-h-[200px]",
       },
     },
     immediatelyRender: false,
-    content: initialNote?.content || '<p></p>',
+    content: initialNote?.content || "<p></p>",
     onUpdate: ({ editor }) => {
-      setStatus('saving');
+      setStatus("saving");
       const content = editor.getHTML();
 
-      clearTimeout(window.saveTimeout);
-      window.saveTimeout = setTimeout(() => saveNote(content), 500);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => saveNote(content), 500);
     },
   });
 
@@ -102,18 +105,18 @@ export default function Editor({ noteId, initialNote }: EditorProps) {
         try {
           const supabase = createClient();
           const { data, error } = await supabase
-            .from('notes')
-            .select('*')
-            .eq('id', noteId)
+            .from("notes")
+            .select("*")
+            .eq("id", noteId)
             .single();
 
           if (error) throw error;
 
-          setTitle(data.title || '');
-          editor.commands.setContent(data.content || '<p></p>');
+          setTitle(data.title || "");
+          editor.commands.setContent(data.content || "<p></p>");
         } catch (error) {
-          console.error('Error loading note:', error);
-          router.push('/');
+          //console.error("Error loading note:", error);
+          router.push("/");
         } finally {
           setIsLoading(false);
         }
@@ -122,38 +125,38 @@ export default function Editor({ noteId, initialNote }: EditorProps) {
     }
   }, [noteId, editor, router, initialNote]);
 
-  const handleTitleChange = (e) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
-    setStatus('saving');
+    setStatus("saving");
 
-    clearTimeout(window.titleTimeout);
-    window.titleTimeout = setTimeout(() => {
-      saveNote(editor?.getHTML() || '<p></p>', newTitle);
+    if (titleTimeoutRef.current) clearTimeout(titleTimeoutRef.current);
+    titleTimeoutRef.current = setTimeout(() => {
+      saveNote(editor?.getHTML() || "<p></p>", newTitle);
     }, 500);
   };
 
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-blue-500 border-t-2" />
+        <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-blue-500" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="bg-background flex h-screen flex-col">
       <div className="border-b p-6">
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center space-x-4">
             <button
-              className="flex items-center text-foreground hover:text-foreground/80"
-              onClick={() => router.push('/')}
+              className="text-foreground hover:text-foreground/80 flex items-center"
+              onClick={() => router.push("/")}
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <Input
-              className={`h-auto w-fit border-none p-2 font-medium text-3xl shadow-none focus-visible:ring-0 ${selectedFont.className}`}
+              className={`h-auto w-fit border-none bg-transparent p-2 text-3xl font-medium shadow-none focus-visible:ring-0 ${selectedFont.className}`}
               onChange={handleTitleChange}
               placeholder="Untitled Note"
               value={title}
@@ -191,10 +194,10 @@ export default function Editor({ noteId, initialNote }: EditorProps) {
                         <span className={font.className}>{font.name}</span>
                         <Check
                           className={cn(
-                            'ml-auto h-4 w-4',
+                            "ml-auto h-4 w-4",
                             selectedFont.id === font.id
-                              ? 'opacity-100'
-                              : 'opacity-0'
+                              ? "opacity-100"
+                              : "opacity-0"
                           )}
                         />
                       </CommandItem>
@@ -207,17 +210,19 @@ export default function Editor({ noteId, initialNote }: EditorProps) {
         </div>
       </div>
 
-      <div className="flex flex-1 justify-center overflow-auto bg-background p-8">
+      <div className="bg-background flex flex-1 justify-center overflow-y-auto p-8">
         <div
-          className={`min-h-[900px] w-[850px] rounded-lg bg-card p-8 text-foreground shadow ${selectedFont.className}`}
+          className={`bg-card text-foreground w-[850px] rounded-lg p-8 shadow ${selectedFont.className} min-h-fit`}
         >
-          <EditorContent editor={editor} />
+          <div className="prose prose-lg max-w-none focus:outline-none">
+            <EditorContent editor={editor} />
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-end border-t bg-background px-6 py-4">
-        <span className="text-gray-500 text-sm">
-          {status === 'saving' ? 'Saving...' : 'Saved'}
+      <div className="bg-background flex items-center justify-end border-t px-6 py-4">
+        <span className="text-sm text-gray-500">
+          {status === "saving" ? "Saving..." : "Saved"}
         </span>
       </div>
     </div>

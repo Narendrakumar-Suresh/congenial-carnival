@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Plus, Trash2 } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { Toaster, toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
+import { Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { Toaster, toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 interface Note {
   id: string;
@@ -29,16 +29,16 @@ export default function Home() {
       if (!user) return;
 
       const { data, error } = await supabase
-        .from('notes')
-        .select('id, title, content, updated_at')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+        .from("notes")
+        .select("id, title, content, updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
       setNotes(data || []);
     } catch (error) {
-      console.error('Error fetching notes:', error);
-      toast.error('Failed to load notes');
+      // console.error("Error fetching notes:", error);
+      toast.error("Failed to load notes");
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export default function Home() {
   const handleDeleteNote = async (noteId: string) => {
     if (
       !confirm(
-        'Are you sure you want to delete this note? This action cannot be undone.'
+        "Are you sure you want to delete this note? This action cannot be undone."
       )
     ) {
       return;
@@ -67,15 +67,15 @@ export default function Home() {
 
     setDeletingId(noteId);
     try {
-      const { error } = await supabase.from('notes').delete().eq('id', noteId);
+      const { error } = await supabase.from("notes").delete().eq("id", noteId);
 
       if (error) throw error;
 
       setNotes(notes.filter((note) => note.id !== noteId));
-      toast.success('Note deleted successfully');
+      toast.success("Note deleted successfully");
     } catch (error) {
-      console.error('Error deleting note:', error);
-      toast.error('Failed to delete note');
+      // console.error("Error deleting note:", error);
+      toast.error("Failed to delete note");
     } finally {
       setDeletingId(null);
     }
@@ -84,10 +84,10 @@ export default function Home() {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error signing out:', error);
-      toast.error('Failed to sign out');
+      // console.error("Error signing out:", error);
+      toast.error("Failed to sign out");
     } else {
-      router.push('/auth/login');
+      router.push("/auth/login");
     }
   };
 
@@ -96,11 +96,11 @@ export default function Home() {
       <Toaster position="top-center" />
       <div className="container mx-auto max-w-4xl p-4">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="font-bold text-2xl">My Notes</h1>
+          <h1 className="text-2xl font-bold">My Notes</h1>
           <div className="flex items-center gap-2">
             <Link
               aria-label="Create new note"
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-md px-4 py-2 transition-colors"
               href="/new"
             >
               <Plus className="h-4 w-4" />
@@ -108,7 +108,7 @@ export default function Home() {
             </Link>
             <button
               aria-label="Sign out"
-              className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex items-center gap-2 rounded-md border px-4 py-2 transition-colors"
               onClick={handleSignOut}
             >
               Sign Out
@@ -126,26 +126,26 @@ export default function Home() {
           <div className="space-y-2">
             {notes.map((note) => (
               <div
-                className="group relative flex items-center justify-between rounded-lg p-4 transition-colors hover:bg-accent/50"
+                className="group hover:bg-accent/50 relative flex items-center justify-between rounded-lg p-4 transition-colors"
                 key={note.id}
               >
                 <Link className="min-w-0 flex-1" href={`/${note.id}`}>
                   <div className="flex flex-col">
                     <h3 className="truncate pr-8 font-medium">
-                      {note.title || 'Untitled Note'}
+                      {note.title || "Untitled Note"}
                     </h3>
                     <p className="text-muted-foreground text-sm">
                       {new Date(note.updated_at).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
                       })}
                     </p>
                   </div>
                 </Link>
                 <button
                   aria-label="Delete note"
-                  className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
+                  className="text-muted-foreground hover:bg-accent hover:text-destructive rounded-full p-2 transition-colors"
                   disabled={deletingId === note.id}
                   onClick={(e) => {
                     e.preventDefault();
@@ -154,7 +154,7 @@ export default function Home() {
                   }}
                 >
                   {deletingId === note.id ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-current border-t-2 border-b-2" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-b-2 border-current" />
                   ) : (
                     <Trash2 className="h-4 w-4" />
                   )}

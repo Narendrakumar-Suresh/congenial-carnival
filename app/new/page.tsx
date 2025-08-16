@@ -1,12 +1,14 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+// Create Supabase client once, outside the component
+const supabase = createClient();
 
 export default function NewNotePage() {
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     const createNewNote = async () => {
@@ -14,17 +16,18 @@ export default function NewNotePage() {
         const {
           data: { user },
         } = await supabase.auth.getUser();
+
         if (!user) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
         const { data: note, error } = await supabase
-          .from('notes')
+          .from("notes")
           .insert([
             {
-              title: 'Untitled Note',
-              content: '',
+              title: "Untitled Note",
+              content: "",
               user_id: user.id,
             },
           ])
@@ -33,13 +36,11 @@ export default function NewNotePage() {
 
         if (error) throw error;
 
-        // Redirect to the new note's edit page
         if (note) {
           router.push(`/${note.id}`);
         }
-      } catch (error) {
-        console.error('Error creating note:', error);
-        router.push('/');
+      } catch {
+        router.push("/");
       }
     };
 
@@ -48,7 +49,7 @@ export default function NewNotePage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-blue-500 border-t-2 border-b-2" />
+      <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500" />
     </div>
   );
 }

@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const Editor = dynamic(
-  () => import('@/components/editor').then((mod) => mod.default),
+  () => import("@/components/editor").then((mod) => mod.default),
   {
     ssr: false,
     loading: () => (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-blue-500 border-t-2 border-b-2" />
+        <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-blue-500" />
       </div>
     ),
   }
 );
 
 interface NotePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function NotePage({ params }: NotePageProps) {
-  const { id } = params;
+  const { id } = use(params);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const router = useRouter();
@@ -37,28 +37,28 @@ export default function NotePage({ params }: NotePageProps) {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
         const { data, error } = await supabase
-          .from('notes')
-          .select('*')
-          .eq('id', id)
-          .eq('user_id', user.id)
+          .from("notes")
+          .select("*")
+          .eq("id", id)
+          .eq("user_id", user.id)
           .single();
 
         if (error || !data) {
-          console.error('Note not found or access denied:', error);
-          router.push('/');
+          // console.error("Note not found or access denied:", error);
+          router.push("/");
           return;
         }
 
         setNote(data);
         setIsAuthorized(true);
       } catch (error) {
-        console.error('Error checking note:', error);
-        router.push('/');
+        // console.error("Error checking note:", error);
+        router.push("/");
       } finally {
         setIsLoading(false);
       }
