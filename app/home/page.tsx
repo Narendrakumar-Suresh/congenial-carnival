@@ -5,7 +5,6 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface Note {
   id: string;
@@ -19,7 +18,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const supabase = createClient();
-  const router = useRouter();
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -74,39 +72,20 @@ export default function Home() {
     }
   };
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
-      toast.error('Failed to sign out');
-    } else {
-      router.push('/auth/login');
-    }
-  };
-
   return (
     <>
       <Toaster position="top-center" />
       <div className="container mx-auto p-4 max-w-4xl">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">My Notes</h1>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/new"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-              aria-label="Create new note"
-            >
-              <Plus className="w-4 h-4" />
-              New Note
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="inline-flex items-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-colors"
-              aria-label="Sign out"
-            >
-              Sign Out
-            </button>
-          </div>
+          <Link
+            href="/new"
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+            aria-label="Create new note"
+          >
+            <Plus className="w-4 h-4" />
+            New Note
+          </Link>
         </div>
 
         {notes.length === 0 ? (
