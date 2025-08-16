@@ -1,0 +1,2 @@
+# Real reason for this app
+Notion was free and it is nice but I found one problem recently. They started askign money saying you have used our freeblocks and that too very frequently. So I decided to move away from it and took it as an oppurtinity for me write a simple one which is nice to me. If you feel a lot of things are missing (which is) you can add your features it uses supabase for everything like auth and DB.
